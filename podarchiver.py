@@ -47,11 +47,13 @@ def get_channeldata(xml):
 # archiving episodes and data
 def initial_setup(xml):
 
+    # Get and store information about the series
     channel_data = get_channeldata(xml)
     episode_path = 'Podcasts/' + channel_data['title']
     ensure_dir(episode_path)
-    open('archive.log', 'a').close()
+    open('archive.log', 'a').close()  # Make sure the archive log exists
     
+    # Write series information to a file
     json_file = episode_path + '/' + channel_data['title'] + '.json'
     if not os.path.exists(json_file):
         with open(json_file, 'w') as file:
@@ -129,7 +131,7 @@ def archive_episodes(title, path, xml):
                         
                 # Add GUID to the archive log
                 with open('archive.log', 'a') as file:
-                    file.write(ep['guid'])
+                    file.write(ep['guid'] + '\n')
     
     return
     
@@ -164,6 +166,7 @@ def ensure_dir(directory):
 # Read podcast feeds from the file
 feeds = read_feeds(feeds_file)
 
+# Loop through podcast feeds and begin archiving
 for feed in feeds:
     xml = get_feedxml(feed)
     title, path = initial_setup(xml)
