@@ -50,6 +50,7 @@ def initial_setup(xml):
     channel_data = get_channeldata(xml)
     episode_path = 'Podcasts/' + channel_data['title']
     ensure_dir(episode_path)
+    open('archive.log', 'a').close()
     
     json_file = episode_path + '/' + channel_data['title'] + '.json'
     if not os.path.exists(json_file):
@@ -94,31 +95,42 @@ def archive_episodes(title, path, xml):
         ep_summary = episode.find('itunes:summary').string
         
         # Store episode data dictionary
-        ep_data = {'title': ep_title,
-                   'num': ep_num,
-                   'link': ep_link,
-                   'file': ep_file,
-                   'guid': ep_guid,
-                   'date': ep_date,
-                   'image': ep_image,
-                   'duration': ep_dur,
-                   'summary': ep_summary
-                   }
+        ep = {'title': ep_title,
+              'num': ep_num,
+              'link': ep_link,
+              'file': ep_file,
+              'guid': ep_guid,
+              'date': ep_date,
+              'image': ep_image,
+              'duration': ep_dur,
+              'summary': ep_summary
+              }
         
         # Status line
         status = ' [' + str(i+1) + '/' + number + ']'
-        print('Downloading: ' + title + ' - ' + ep_data['title'] + status)
+        status = title + ' - ' + ep['title'] + status
         
-        # Build root file name and download cover art and MP3 files
+        # Build root file name
         root_name = path + '/' + title + '_' + ep['date'] + '_' + ep['title']
-        downloader(title, path, ep_data, root_name)
         
-        # Write episode data file
-        json_file = root_name + '.data'
-        if not os.path.exists(json_file):
-            with open(json_file, 'w') as file:
-                json.dump(ep_data, file, indent=4)
+        # Check archive log file if episode already downloaded
+        with open('archive.log', 'r') as f:
+            if ep['guid'] in f.read():
+                print('Skipping: ' + status)
+            else:
+                print('Downloading: ' + status)
+                downloader(title, path, ep, root_name)
         
+                # Write episode data file
+                json_file = root_name + '.data'
+                if not os.path.exists(json_file):
+                    with open(json_file, 'w') as file:
+                        json.dump(ep, file, indent=4)
+                        
+                # Add GUID to the archive log
+                with open('archive.log', 'a') as file:
+                    file.write(ep['guid'])
+    
     return
     
 # Function to download the episode MP3 and cover art
@@ -157,5 +169,4 @@ for feed in feeds:
     title, path = initial_setup(xml)
     archive_episodes(title, path, xml)
 
-#print(soup.find_all('item'))
-#print(soup)
+
