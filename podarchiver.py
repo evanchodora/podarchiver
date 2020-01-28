@@ -8,6 +8,16 @@ import json
 from datetime import datetime
 
 
+# Python script to download and archive podcast feeds.
+#
+# Reads feeds from lines of a `feeds.txt` file. Downloads episode cover art, 
+# description information, and MP3 files in organized directories. An 
+# archive.log tracks the downloaded episode GUIDs so it will skip already 
+# archived episodes when the script is run again.
+#
+# Evan Chodora, 2020
+# https://github.com/evanchodora/podarchiver
+
 # User files
 feeds_file = 'feeds.txt'
 archive_file = 'archive.log'
